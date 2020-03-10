@@ -331,12 +331,14 @@ class XiaomiSmartHomeDevice extends ipsmodule
               break;
              */
             default:
-                echo 'Invalid Ident';
-                $WriteValue = null;
-                break;
+                echo 'Unknow model';
+                return;
         }
-        if ($WriteValue !== NULL)
+        if ($WriteValue !== NULL){
             $this->WriteValue($Ident, $WriteValue);
+        } else {
+            echo 'Invalid Ident';
+        }
     }
 
     public function WriteValueBoolean(string $Ident, bool $Value)

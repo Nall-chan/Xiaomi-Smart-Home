@@ -7,9 +7,9 @@
     [
         "Xiaomi Smart Home Splitter"
     ],  
-    "parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+    "parentRequirements": ["{C8792760-65CF-4C53-B5C7-A30FCC84FEFE}"],
     "childRequirements": ["{B75DE28A-A29F-4B11-BF9D-5CC758281F38}"],
-    "implemented": ["{018EF6B5-AB94-40C6-AA53-46943E824ACF}" ,"{E496ED12-5963-4494-87F3-E537175E7418}"],
+    "implemented": ["{7A1272A4-CBDB-46EF-BFC6-DCF4A53D2FC7}" ,"{E496ED12-5963-4494-87F3-E537175E7418}"],
     "prefix": "XISMS"
-    
+
 }

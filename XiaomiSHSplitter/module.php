@@ -1,6 +1,6 @@
 <?php
 
-// SendDataToParent (79827379-F36E-4ADA-8A95-5F8D1DC92FA9)
+// SendDataToParent ({C8792760-65CF-4C53-B5C7-A30FCC84FEFE})
 // SendDateToChild (B75DE28A-A29F-4B11-BF9D-5CC758281F38)
 include_once(__DIR__ . "/../XiaomTraits.php");
 
@@ -38,15 +38,31 @@ class XiaomiSmartHomeSplitter extends ipsmodule
     {
         // Diese Zeile nicht löschen.
         parent::Create();
-        //Always create our own MultiCast I/O, when no parent is already available
-        $this->RequireParent("{BAB408E0-0A0F-48C3-B14E-9FB2FA81F66A}");
+        //$this->RequireParent("{BAB408E0-0A0F-48C3-B14E-9FB2FA81F66A}");
+        $this->RequireSharedParent();
         $this->RegisterTimer('KeepAlive', 0, 'XISMS_KeepAlive($_IPS[\'TARGET\']);');
+        $this->RegisterPropertyString('Host', '');
         $this->RegisterPropertyString('Password', '');
         // Alle Instanz-Buffer initialisieren
         $this->sid = "";
         $this->SendQueue = array();
     }
 
+    private function RequireSharedParent()
+    {
+        $instance = IPS_GetInstance($this->InstanceID);
+        if ($instance['ConnectionID'] == 0) {
+            $ids = IPS_GetInstanceListByModuleID('{BAB408E0-0A0F-48C3-B14E-9FB2FA81F66A}');
+            foreach ($ids as $id) {
+                if (IPS_GetObject($id)['ObjectIdent'] == 'XIAOMI_ZigBee_MultiIO') {
+                    IPS_ConnectInstance($this->InstanceID, $id);
+                    return;
+                }
+            }
+            $this->RequireParent('{BAB408E0-0A0F-48C3-B14E-9FB2FA81F66A}');
+            IPS_SetIdent(IPS_GetInstance($this->InstanceID)['ConnectionID'], 'XIAOMI_ZigBee_MultiIO');
+        }
+    }
     // Überschreibt die intere IPS_ApplyChanges($id) Funktion
     public function ApplyChanges()
     {
@@ -61,12 +77,19 @@ class XiaomiSmartHomeSplitter extends ipsmodule
             return;
         // SendQueue leeren
         $this->SendQueue = array();
-        $this->GatewayIP = "";
+        $this->GatewayIP = $this->ReadPropertyString('Host');
         $this->SetSummary($this->sid);
+        $this->SetReceiveDataFilter('.*"ClientIP":"' . $this->ReadPropertyString('Host') . '".*');
         // Unseren Parent merken und auf dessen Statusänderungen registrieren.
         $this->RegisterParent();
-        if ($this->HasActiveParent())
+        if ($this->HasActiveParent()){
             $this->IOChangeState(IS_ACTIVE);
+        } else {
+            if ($this->GatewayIP ==''){
+                $this->SetSummary('');            
+                $this->SetStatus(IS_INACTIVE);
+            }
+        }
     }
 
     /**
@@ -105,13 +128,10 @@ class XiaomiSmartHomeSplitter extends ipsmodule
         $this->IORegisterParent();
         if ($this->ParentID > 0)
         {
-            $this->GatewayIP = IPS_GetProperty($this->ParentID, 'Host');
             $this->SetSummary($this->sid);
         }
         else
         {
-            $this->GatewayIP = "";
-            $this->sid = "";
             $this->SetSummary('no parent');
         }
     }
@@ -127,9 +147,14 @@ class XiaomiSmartHomeSplitter extends ipsmodule
         $this->SetStatus(IS_ACTIVE); // Raus aus den Fehlerzustand
         if ($State == IS_ACTIVE) // Parent ist Aktiv geworden
         {
-            $this->SetTimerInterval('KeepAlive', 60000); // KeepAlive starten
-            $this->SetSummary($this->sid);
-            $this->RefreshAllDevices();
+            if ($this->GatewayIP ==''){
+                $this->SetSummary('');            
+                $this->SetStatus(IS_INACTIVE);
+            } else {
+                $this->SetTimerInterval('KeepAlive', 60000); // KeepAlive starten
+                $this->SetSummary($this->sid);
+                $this->RefreshAllDevices();
+            }
         }
         else // Oh, Parent ist nicht aktiv geworden
         {
@@ -215,6 +240,9 @@ class XiaomiSmartHomeSplitter extends ipsmodule
      */
     private function Send($cmd, $sid, $model = null, $Data = null)
     {
+        if ($this->GatewayIP==''){
+            return false;
+        }
         if (IPS_GetInstance($this->InstanceID)['InstanceStatus'] != IS_ACTIVE)
         {
             trigger_error('Instance Xiaomi Gateway-Splitter (' . $this->InstanceID . ') inactiv. ', E_USER_NOTICE);
@@ -247,7 +275,11 @@ class XiaomiSmartHomeSplitter extends ipsmodule
         $this->SendDebug('Send', $SendData, 0);
         try     // versenden
         {
-            $this->SendDataToParent(json_encode(Array("DataID" => "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}", "Buffer" => json_encode($SendData))));
+            $this->SendDataToParent(json_encode(Array("DataID" => "{C8792760-65CF-4C53-B5C7-A30FCC84FEFE}",
+                                                      "ClientIP" => $this->GatewayIP,
+                                                      "ClientPort" => 9898,
+                                                      "Buffer" => json_encode($SendData)
+                                                    )));
         }
         catch (Exception $exc)
         {
