@@ -44,6 +44,17 @@ class XiaomiSmartHomeDevice extends ipsmodule
             "voltage_percent" => "~Battery.100",
             "battery_low"     => "~Alert"
         ),
+        "remote.b286acn01"  => array(
+            "channel_0_click"           => "",
+            "channel_0_long_click"      => "",
+            "channel_0_double_click"    => "",
+            "channel_1_click"           => "",
+            "channel_1_long_click"      => "",
+            "channel_1_double_click"    => "",
+            "voltage"         => "~Volt",
+            "voltage_percent" => "~Battery.100",
+            "battery_low"     => "~Alert"
+        ),
         "86sw2"             => array(
             "channel_0_click"         => "",
             "channel_0_double_click"  => "",
@@ -473,6 +484,7 @@ class XiaomiSmartHomeDevice extends ipsmodule
                 return $this->SetValueBoolean(trim($Value), true);
             case '86sw2':
             case 'remote.b186acn01':
+            case 'remote.b286acn01':
                 return $this->SetValueBoolean($Ident . "_" . trim($Value), true);
             case 'sensor_ht':
                 return $this->SetValueFloat($Ident, intval($Value) / 100);
