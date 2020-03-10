@@ -80,6 +80,7 @@ class XiaomiSmartHomeSplitter extends ipsmodule
         $this->GatewayIP = $this->ReadPropertyString('Host');
         $this->SetSummary($this->sid);
         $this->SetReceiveDataFilter('.*"ClientIP":"' . $this->ReadPropertyString('Host') . '".*');
+        $this->SendDebug('Filter','.*"ClientIP":"' . $this->ReadPropertyString('Host') . '".*',0);
         // Unseren Parent merken und auf dessen Statusänderungen registrieren.
         $this->RegisterParent();
         if ($this->HasActiveParent()){
