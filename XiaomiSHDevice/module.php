@@ -155,6 +155,22 @@ class XiaomiSmartHomeDevice extends ipsmodule
         "sensor_wleak.aq1"  => array(
             "status" => "~Alert"
         ),
+        "sensor_cube.aqgl01" => array(
+            "status_shake_air" => "",
+            "status_free_fall" => "",
+            "status_move"      => "",
+            "status_tap_twice" => "",
+            "status_flip90"    => "",
+            "status_flip180"   => "",
+            "status_alert"     => "",
+            "status_swing"     => "",
+            "status_iam"       => "",
+            "rotate"           => "",
+            "rotate_time"      => "",
+            "voltage"          => "~Volt",
+            "voltage_percent"  => "~Battery.100",
+            "battery_low"      => "~Alert"
+        ),
         "cube"              => array(
             "status_shake_air" => "",
             "status_free_fall" => "",
